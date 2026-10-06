@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: domicilios-postgres
+    environment:
+      POSTGRES_DB: domicilios_db
+      POSTGRES_USER: domicilios
+      POSTGRES_PASSWORD: domicilios
+    ports:
+      - "5432:5432"
+    volumes:
+      - domicilios-datos:/var/lib/postgresql/data
+
+volumes:
+  domicilios-datos:

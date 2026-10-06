@@ -1,0 +1,645 @@
+{
+  "info": {
+    "name": "Plataforma de Domicilios",
+    "description": "Flujo completo de la API. Ejecute las carpetas en orden (1 a 5). IDs de los datos de ejemplo: establecimientos 1 = La Esquina Burger, 2 = Pizzería Napoli, 3 = Dulce Aroma Café; clientes 1 = Ana Gómez, 2 = Carlos Pérez; repartidores 3 a 6.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "pedidoId",
+      "value": "1"
+    },
+    {
+      "key": "repartidorId",
+      "value": "3"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Catálogo",
+      "item": [
+        {
+          "name": "Listar establecimientos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/establecimientos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "establecimientos"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Productos y disponibilidad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/establecimientos/1/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "establecimientos",
+                "1",
+                "productos"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Cliente: pedido",
+      "item": [
+        {
+          "name": "Cotizar (descuentos apilados)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/cotizacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "cotizacion"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 2,\n  \"establecimientoId\": 1,\n  \"metodoPago\": \"TARJETA\",\n  \"codigosDescuento\": [\n    \"ENVIOGRATIS\",\n    \"DOMI10\"\n  ],\n  \"items\": [\n    {\n      \"productoId\": 1,\n      \"cantidad\": 2\n    },\n    {\n      \"productoId\": 4,\n      \"cantidad\": 2\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Crear pedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 2,\n  \"establecimientoId\": 1,\n  \"metodoPago\": \"TARJETA\",\n  \"codigosDescuento\": [\n    \"DOMI10\"\n  ],\n  \"items\": [\n    {\n      \"productoId\": 1,\n      \"cantidad\": 2\n    },\n    {\n      \"productoId\": 4,\n      \"cantidad\": 2\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const p = pm.response.json();",
+                  "pm.collectionVariables.set('pedidoId', p.id);",
+                  "pm.test('Pedido creado en estado RECIBIDO', () => pm.expect(p.estado).to.eql('RECIBIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar pedido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "{{pedidoId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Pedidos del cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes/2/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "2",
+                "pedidos"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Error: producto agotado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 1,\n  \"establecimientoId\": 1,\n  \"metodoPago\": \"EFECTIVO\",\n  \"items\": [\n    {\n      \"productoId\": 6,\n      \"cantidad\": 1\n    }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Establecimiento",
+      "item": [
+        {
+          "name": "Pedidos del establecimiento",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/establecimientos/1/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "establecimientos",
+                "1",
+                "pedidos"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Error: entregar sin preparar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/entregar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "{{pedidoId}}",
+                "entregar"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Preparar pedido",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/preparar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "{{pedidoId}}",
+                "preparar"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Despachar (asigna repartidor)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/despachar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "{{pedidoId}}",
+                "despachar"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const p = pm.response.json();",
+                  "pm.test('Pedido EN_CAMINO', () => pm.expect(p.estado).to.eql('EN_CAMINO'));",
+                  "pm.sendRequest(pm.collectionVariables.get('baseUrl') + '/api/repartidores', (err, res) => {",
+                  "  const r = res.json().find(x => x.nombre === p.repartidor);",
+                  "  if (r) pm.collectionVariables.set('repartidorId', r.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inventario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/establecimientos/1/inventario",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "establecimientos",
+                "1",
+                "inventario"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Ajustar stock",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/establecimientos/1/inventario/6",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "establecimientos",
+                "1",
+                "inventario",
+                "6"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cantidad\": 15\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Repartidor y seguimiento",
+      "item": [
+        {
+          "name": "Repartidores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/repartidores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "repartidores"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Pedidos activos del repartidor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/repartidores/{{repartidorId}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "repartidores",
+                "{{repartidorId}}",
+                "pedidos"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Avanzar en la ruta (simulación)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/repartidores/{{repartidorId}}/avanzar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "repartidores",
+                "{{repartidorId}}",
+                "avanzar"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Reportar ubicación GPS",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/repartidores/{{repartidorId}}/ubicacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "repartidores",
+                "{{repartidorId}}",
+                "ubicacion"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitud\": 4.66,\n  \"longitud\": -74.054\n}"
+            }
+          }
+        },
+        {
+          "name": "Seguimiento del cliente (ruta y ETA)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/seguimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "{{pedidoId}}",
+                "seguimiento"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Notificaciones del cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "{{pedidoId}}",
+                "notificaciones"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Entregar pedido",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/entregar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "{{pedidoId}}",
+                "entregar"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Terminar turno",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/repartidores/6/turno?enTurno=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "repartidores",
+                "6",
+                "turno"
+              ],
+              "query": [
+                {
+                  "key": "enTurno",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Administrador",
+      "item": [
+        {
+          "name": "Productos por domiciliario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/repartidores/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "repartidores",
+                "productos"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Disponibilidad por establecimiento",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/establecimientos/disponibilidad",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "establecimientos",
+                "disponibilidad"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Bitácora de eventos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/bitacora",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "bitacora"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Estrategias activas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/estrategias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "estrategias"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Cambiar estrategias",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/estrategias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "estrategias"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asignacion\": \"menos-ocupado\",\n  \"tiempo\": \"con-trafico\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
